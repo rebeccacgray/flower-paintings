@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flower Paintings &amp; Portraits by Rebecca C Gray</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+<style>
+  :root{
+    --paper:#f4f2ec; --surface:#fcfbf8; --ink:#242019; --muted:#7a7266;
+    --line:#ddd7cc; --accent:#31504a; --mat:#efece4; --maxw:1180px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif; font-size:15px; line-height:1.5;}
+  a{color:inherit;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px;}
+
+  header.masthead{padding:40px 0 18px;}
+  .masthead a{display:inline-block; text-decoration:none;}
+  .masthead h1{font-family:"Spectral", Georgia, serif; font-weight:500;
+    font-size:clamp(26px, 3.6vw, 38px); letter-spacing:.2px; margin:0; line-height:1.12;}
+  .masthead .rule{height:1px; background:var(--line); margin:18px 0 0;}
+
+  /* page nav on artwork view */
+  .nav{display:flex; gap:20px; align-items:center; padding:18px 0 4px; font-size:13.5px;}
+  .nav a{color:var(--accent); text-decoration:none;}
+  .nav a:hover{text-decoration:underline;}
+  .nav .spacer{flex:1;}
+
+  /* home grid */
+  .count{color:var(--muted); font-size:13px; padding:18px 0 0;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:20px 0 60px;}
+  .card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line);
+    border-radius:2px; overflow:hidden; text-decoration:none;}
+  .frame{background:var(--mat); padding:16px; display:flex; align-items:center; justify-content:center; min-height:170px;}
+  .frame img{max-width:100%; height:auto; display:block;}
+  .frame .missing{color:var(--muted); font-size:12.5px; text-align:center; padding:24px 8px;}
+  .cbody{padding:12px 14px 15px;}
+  .ctitle{font-family:"Spectral", Georgia, serif; font-size:16px; font-weight:500; line-height:1.2; margin:0;}
+  .cmeta{color:var(--muted); font-size:12.5px; margin:4px 0 0;}
+
+  /* artwork view */
+  .art{display:grid; grid-template-columns:2fr 1fr; gap:34px; padding:22px 0 64px; align-items:start;}
+  .art .imgframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
+    padding:28px; display:flex; align-items:center; justify-content:center;}
+  .art .imgframe img{max-width:100%; height:auto; display:block;}
+  .art .imgframe .missing{color:var(--muted); font-size:13px; text-align:center; padding:60px 10px;}
+  .block{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:20px; margin-bottom:22px;}
+  .block h1{font-family:"Spectral", Georgia, serif; font-weight:500; font-size:24px; line-height:1.18; margin:0 0 14px;}
+  .block h2{font-family:"IBM Plex Sans", sans-serif; font-weight:600; font-size:12px; letter-spacing:.06em;
+    text-transform:uppercase; color:var(--muted); margin:0 0 14px;}
+  dl.meta{margin:0; display:grid; grid-template-columns:auto 1fr; gap:7px 14px;}
+  dl.meta dt{color:var(--muted); font-size:12.5px;}
+  dl.meta dd{margin:0; font-size:14px;}
+  .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
+  .related-grid a{text-decoration:none; display:block;}
+  .related-grid .rframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
+    padding:10px; display:flex; align-items:center; justify-content:center; min-height:96px;}
+  .related-grid img{max-width:100%; height:auto; display:block;}
+  .related-grid .rtitle{font-size:12.5px; line-height:1.3; margin:6px 0 0;}
+
+  @media (max-width:820px){
+    .art{grid-template-columns:1fr; gap:22px;}
+  }
+  @media (max-width:560px){
+    .grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:18px 14px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <a href="#"><h1>Flower Paintings &amp; Portraits by Rebecca C Gray</h1></a>
+    <div class="rule"></div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<script>
+/* ---------------- config ---------------- */
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9c4thGPaDNLfMywOGAmZIPTYyDZQTmXvlWCFf_qzTia44vK5gmGbE9kyN0Dc0NstkuEpYMh/pub?gid=637529450&single=true&output=csv";
+const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
+const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10 };
+const img = (id) => IMAGE_BASE + "images_th/" + id + "_th.jpg";
+
+/* ---------------- helpers ---------------- */
+const $ = (id) => document.getElementById(id);
+const cell = (r, i) => (r && r[i] != null ? String(r[i]).trim() : "");
+function el(tag, cls){ const e = document.createElement(tag); if(cls) e.className = cls; return e; }
+function imgInto(frame, src, alt, missingText){
+  const im = el("img"); im.loading = "lazy"; im.src = src; im.alt = alt || "";
+  im.onerror = () => { frame.innerHTML = ""; const d = el("div", "missing"); d.textContent = missingText; frame.appendChild(d); };
+  frame.appendChild(im);
+}
+
+let WORKS = [], BY_ID = {};
+
+/* ---------------- data ---------------- */
+Papa.parse(SHEET_CSV_URL, {
+  download:true, header:false, skipEmptyLines:true,
+  complete:(res) => {
+    let rows = res.data || [];
+    if(rows.length && cell(rows[0], COL.id).toLowerCase() === "id") rows = rows.slice(1);
+    WORKS = rows.filter(r => cell(r, COL.id) && cell(r, COL.title));
+    BY_ID = {};
+    WORKS.forEach((r, i) => { BY_ID[cell(r, COL.id)] = i; });
+    route();
+  },
+  error:() => { $("view").innerHTML = '<p class="count">Couldn\u2019t load the catalogue. If you opened this file from your computer, open the web address instead.</p>'; }
+});
+
+/* ---------------- routing ---------------- */
+window.addEventListener("hashchange", route);
+function route(){
+  const id = decodeURIComponent(location.hash.replace(/^#/, ""));
+  if(id && BY_ID[id] !== undefined) renderArtwork(id); else renderHome();
+  window.scrollTo(0, 0);
+}
+
+/* ---------------- home ---------------- */
+function renderHome(){
+  const view = $("view"); view.innerHTML = "";
+  const count = el("p", "count"); count.textContent = WORKS.length + " works"; view.appendChild(count);
+  const grid = el("div", "grid");
+  WORKS.forEach(r => {
+    const id = cell(r, COL.id);
+    const a = el("a", "card"); a.href = "#" + encodeURIComponent(id);
+    const frame = el("div", "frame");
+    imgInto(frame, img(id), cell(r, COL.title), "Image coming soon");
+    const body = el("div", "cbody");
+    const t = el("p", "ctitle"); t.textContent = cell(r, COL.title); body.appendChild(t);
+    const m = cell(r, COL.category);
+    if(m){ const cm = el("p", "cmeta"); cm.textContent = m; body.appendChild(cm); }
+    a.appendChild(frame); a.appendChild(body); grid.appendChild(a);
+  });
+  view.appendChild(grid);
+}
+
+/* ---------------- artwork ---------------- */
+function renderArtwork(id){
+  const view = $("view"); view.innerHTML = "";
+  const idx = BY_ID[id], row = WORKS[idx];
+  const prev = WORKS[(idx - 1 + WORKS.length) % WORKS.length];
+  const next = WORKS[(idx + 1) % WORKS.length];
+
+  // nav
+  const nav = el("nav", "nav");
+  const aPrev = el("a"); aPrev.href = "#" + encodeURIComponent(cell(prev, COL.id)); aPrev.textContent = "\u2190 Previous Artwork";
+  const aHome = el("a"); aHome.href = "#"; aHome.textContent = "Home";
+  const aNext = el("a"); aNext.href = "#" + encodeURIComponent(cell(next, COL.id)); aNext.textContent = "Next Artwork \u2192";
+  nav.appendChild(aPrev); nav.appendChild(aHome);
+  const sp = el("span", "spacer"); nav.appendChild(sp);
+  nav.appendChild(aNext);
+  view.appendChild(nav);
+
+  const art = el("div", "art");
+
+  // left: image, 2/3
+  const left = el("div", "image-col");
+  const iframe = el("div", "imgframe");
+  imgInto(iframe, img(id), cell(row, COL.title), "Image coming soon");
+  left.appendChild(iframe);
+  art.appendChild(left);
+
+  // right: blocks, 1/3
+  const right = el("div", "detail-col");
+
+  // details block
+  const details = el("div", "block");
+  const h1 = el("h1"); h1.textContent = cell(row, COL.title); details.appendChild(h1);
+  const dl = el("dl", "meta");
+  [["Medium", COL.medium], ["Size", COL.size], ["Year finished", COL.year], ["Price", COL.price]].forEach(([label, c]) => {
+    const v = cell(row, c); if(!v) return;
+    const dt = el("dt"); dt.textContent = label; const dd = el("dd"); dd.textContent = v;
+    dl.appendChild(dt); dl.appendChild(dd);
+  });
+  details.appendChild(dl);
+  right.appendChild(details);
+
+  // related block
+  const rels = [cell(row, COL.rel1), cell(row, COL.rel2)].filter(x => x && BY_ID[x] !== undefined);
+  if(rels.length){
+    const rb = el("div", "block");
+    const h2 = el("h2"); h2.textContent = "Related Artworks"; rb.appendChild(h2);
+    const rg = el("div", "related-grid");
+    rels.forEach(rid => {
+      const rr = WORKS[BY_ID[rid]];
+      const a = el("a"); a.href = "#" + encodeURIComponent(rid);
+      const rf = el("div", "rframe");
+      imgInto(rf, img(rid), cell(rr, COL.title), "Image coming soon");
+      const rt = el("p", "rtitle"); rt.textContent = cell(rr, COL.title);
+      a.appendChild(rf); a.appendChild(rt); rg.appendChild(a);
+    });
+    rb.appendChild(rg);
+    right.appendChild(rb);
+  }
+
+  art.appendChild(right);
+  view.appendChild(art);
+}
+</script>
+</body>
+</html>
