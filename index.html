@@ -59,6 +59,15 @@
   dl.meta{margin:0; display:grid; grid-template-columns:auto 1fr; gap:7px 14px;}
   dl.meta dt{color:var(--muted); font-size:12.5px;}
   dl.meta dd{margin:0; font-size:14px;}
+  .action{margin-top:16px;}
+  .btn{display:inline-block; width:100%; text-align:center; text-decoration:none;
+    font-family:"IBM Plex Sans", sans-serif; font-size:14px; font-weight:600;
+    padding:11px 14px; border-radius:2px; cursor:pointer;}
+  .btn.buy{background:var(--accent); color:#fcfbf8; border:1px solid var(--accent);}
+  .btn.buy:hover{background:#28433e;}
+  .btn.inquire{background:transparent; color:var(--accent); border:1px solid var(--accent);}
+  .btn.inquire:hover{background:var(--mat);}
+  .action .note{color:var(--muted); font-size:12px; margin:8px 0 0; text-align:center;}
   .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
   .related-grid a{text-decoration:none; display:block;}
   .related-grid .rframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
@@ -87,7 +96,13 @@
 /* ---------------- config ---------------- */
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9c4thGPaDNLfMywOGAmZIPTYyDZQTmXvlWCFf_qzTia44vK5gmGbE9kyN0Dc0NstkuEpYMh/pub?gid=637529450&single=true&output=csv";
 const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
-const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10 };
+
+/* Where "Inquire" emails should go. Put your email between the quotes. */
+const INQUIRE_EMAIL = "rebeccacgray@gmail.com";
+
+/* Column L (the 12th column) holds the Stripe payment link for a work that is for sale.
+   Leave it blank on any work that is not for sale, and the page shows Inquire instead. */
+const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10, paylink:11 };
 const img = (id) => IMAGE_BASE + "images_th/" + id + "_th.jpg";
 
 /* ---------------- helpers ---------------- */
@@ -182,6 +197,33 @@ function renderArtwork(id){
     dl.appendChild(dt); dl.appendChild(dd);
   });
   details.appendChild(dl);
+
+  // buy if a payment link exists, otherwise inquire
+  const action = el("div", "action");
+  const paylink = cell(row, COL.paylink);
+  const title = cell(row, COL.title);
+  if(/^https?:\/\//i.test(paylink)){
+    const buy = el("a", "btn buy");
+    buy.href = paylink; buy.textContent = "Buy this artwork";
+    buy.rel = "noopener"; buy.target = "_blank";
+    action.appendChild(buy);
+    const note = el("p", "note"); note.textContent = "Secure checkout"; action.appendChild(note);
+  } else {
+    const subject = "Inquiry: " + title + " (" + id + ")";
+    const body = "Hello,\n\nI'm interested in this artwork:\n\n"
+      + "Title: " + title + "\n"
+      + "ID: " + id + "\n"
+      + "Medium: " + cell(row, COL.medium) + "\n"
+      + "Size: " + cell(row, COL.size) + "\n\n"
+      + "Please let me know about availability, price, and shipping.\n\nThank you.";
+    const inq = el("a", "btn inquire");
+    inq.href = "mailto:" + INQUIRE_EMAIL
+      + "?subject=" + encodeURIComponent(subject)
+      + "&body=" + encodeURIComponent(body);
+    inq.textContent = "Inquire about this artwork";
+    action.appendChild(inq);
+  }
+  details.appendChild(action);
   right.appendChild(details);
 
   // related block
