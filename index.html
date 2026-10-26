@@ -68,6 +68,10 @@
   .btn.inquire{background:transparent; color:var(--accent); border:1px solid var(--accent);}
   .btn.inquire:hover{background:var(--mat);}
   .action .note{color:var(--muted); font-size:12px; margin:8px 0 0; text-align:center;}
+  .sold{display:inline-block; width:100%; text-align:center;
+    font-family:"IBM Plex Sans", sans-serif; font-size:13px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
+    padding:11px 14px; border:1px solid var(--line); border-radius:2px; background:var(--mat);}
   .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
   .related-grid a{text-decoration:none; display:block;}
   .related-grid .rframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
@@ -98,7 +102,7 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9
 const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
 
 /* Where "Inquire" emails should go. Put your email between the quotes. */
-const INQUIRE_EMAIL = "rebeccacgray@gmail.com";
+const INQUIRE_EMAIL = "YOUR-EMAIL-HERE@example.com";
 
 /* Column L (the 12th column) holds the Stripe payment link for a work that is for sale.
    Leave it blank on any work that is not for sale, and the page shows Inquire instead. */
@@ -202,7 +206,10 @@ function renderArtwork(id){
   const action = el("div", "action");
   const paylink = cell(row, COL.paylink);
   const title = cell(row, COL.title);
-  if(/^https?:\/\//i.test(paylink)){
+  if(/^sold$/i.test(paylink)){
+    const tag = el("div", "sold"); tag.textContent = "Sold";
+    action.appendChild(tag);
+  } else if(/^https?:\/\//i.test(paylink)){
     const buy = el("a", "btn buy");
     buy.href = paylink; buy.textContent = "Buy this artwork";
     buy.rel = "noopener"; buy.target = "_blank";
@@ -214,8 +221,9 @@ function renderArtwork(id){
       + "Title: " + title + "\n"
       + "ID: " + id + "\n"
       + "Medium: " + cell(row, COL.medium) + "\n"
-      + "Size: " + cell(row, COL.size) + "\n\n"
-      + "Please let me know about availability, price, and shipping.\n\nThank you.";
+      + "Size: " + cell(row, COL.size) + "\n"
+      + "Price: " + cell(row, COL.price) + "\n\n"
+      + "Please let me know about availability and shipping.\n\nThank you.";
     const inq = el("a", "btn inquire");
     inq.href = "mailto:" + INQUIRE_EMAIL
       + "?subject=" + encodeURIComponent(subject)
