@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Flower Paintings &amp; Portraits by Rebecca C Gray</title>
+<title>Flower Paintings &amp; Portraits</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
@@ -24,15 +24,16 @@
 
   header.masthead{padding:40px 0 18px;}
   .masthead a{display:inline-block; text-decoration:none;}
-  .masthead h1{font-family:"Spectral", Georgia, serif; font-weight:500;
-    font-size:clamp(26px, 3.6vw, 38px); letter-spacing:.2px; margin:0; line-height:1.12;}
+  .masthead h1{font-family:"Spectral", Georgia, serif; font-style:italic; font-weight:500;
+    font-size:clamp(32px, 4.3vw, 46px); letter-spacing:.2px; margin:0; line-height:1.1;}
+  .masthead .byline{font-family:"Spectral", Georgia, serif; font-style:normal; font-weight:400;
+    font-size:clamp(17px, 2.2vw, 22px); color:var(--muted); margin:8px 0 0; line-height:1.2;}
   .masthead .rule{height:1px; background:var(--line); margin:18px 0 0;}
 
-  /* page nav on artwork view */
+  /* page nav on artwork view, all nested left */
   .nav{display:flex; gap:20px; align-items:center; padding:18px 0 4px; font-size:13.5px;}
   .nav a{color:var(--accent); text-decoration:none;}
   .nav a:hover{text-decoration:underline;}
-  .nav .spacer{flex:1;}
 
   /* home grid */
   .count{color:var(--muted); font-size:13px; padding:18px 0 0;}
@@ -54,24 +55,11 @@
   .art .imgframe .missing{color:var(--muted); font-size:13px; text-align:center; padding:60px 10px;}
   .block{background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:20px; margin-bottom:22px;}
   .block h1{font-family:"Spectral", Georgia, serif; font-weight:500; font-size:24px; line-height:1.18; margin:0 0 14px;}
-  .block h2{font-family:"IBM Plex Sans", sans-serif; font-weight:600; font-size:12px; letter-spacing:.06em;
+  .block h2{font-family:"IBM Plex Sans", system-ui, sans-serif; font-weight:600; font-size:12px; letter-spacing:.06em;
     text-transform:uppercase; color:var(--muted); margin:0 0 14px;}
   dl.meta{margin:0; display:grid; grid-template-columns:auto 1fr; gap:7px 14px;}
   dl.meta dt{color:var(--muted); font-size:12.5px;}
   dl.meta dd{margin:0; font-size:14px;}
-  .action{margin-top:16px;}
-  .btn{display:inline-block; width:100%; text-align:center; text-decoration:none;
-    font-family:"IBM Plex Sans", sans-serif; font-size:14px; font-weight:600;
-    padding:11px 14px; border-radius:2px; cursor:pointer;}
-  .btn.buy{background:var(--accent); color:#fcfbf8; border:1px solid var(--accent);}
-  .btn.buy:hover{background:#28433e;}
-  .btn.inquire{background:transparent; color:var(--accent); border:1px solid var(--accent);}
-  .btn.inquire:hover{background:var(--mat);}
-  .action .note{color:var(--muted); font-size:12px; margin:8px 0 0; text-align:center;}
-  .sold{display:inline-block; width:100%; text-align:center;
-    font-family:"IBM Plex Sans", sans-serif; font-size:13px; font-weight:600;
-    letter-spacing:.08em; text-transform:uppercase; color:var(--muted);
-    padding:11px 14px; border:1px solid var(--line); border-radius:2px; background:var(--mat);}
   .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
   .related-grid a{text-decoration:none; display:block;}
   .related-grid .rframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
@@ -90,7 +78,10 @@
 <body>
 <div class="wrap">
   <header class="masthead">
-    <a href="#"><h1>Flower Paintings &amp; Portraits by Rebecca C Gray</h1></a>
+    <a href="#">
+      <h1>Flower Paintings &amp; Portraits</h1>
+      <p class="byline">Original Artworks by Rebecca C Gray</p>
+    </a>
     <div class="rule"></div>
   </header>
   <main id="view"></main>
@@ -100,13 +91,7 @@
 /* ---------------- config ---------------- */
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9c4thGPaDNLfMywOGAmZIPTYyDZQTmXvlWCFf_qzTia44vK5gmGbE9kyN0Dc0NstkuEpYMh/pub?gid=637529450&single=true&output=csv";
 const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
-
-/* Where "Inquire" emails should go. Put your email between the quotes. */
-const INQUIRE_EMAIL = "rebeccacgray@gmail.com";
-
-/* Column L (the 12th column) holds the Stripe payment link for a work that is for sale.
-   Leave it blank on any work that is not for sale, and the page shows Inquire instead. */
-const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10, paylink:11 };
+const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10 };
 const img = (id) => IMAGE_BASE + "images_th/" + id + "_th.jpg";
 
 /* ---------------- helpers ---------------- */
@@ -169,14 +154,12 @@ function renderArtwork(id){
   const prev = WORKS[(idx - 1 + WORKS.length) % WORKS.length];
   const next = WORKS[(idx + 1) % WORKS.length];
 
-  // nav
+  // nav, all nested to the left
   const nav = el("nav", "nav");
   const aPrev = el("a"); aPrev.href = "#" + encodeURIComponent(cell(prev, COL.id)); aPrev.textContent = "\u2190 Previous Artwork";
-  const aHome = el("a"); aHome.href = "#"; aHome.textContent = "Home";
   const aNext = el("a"); aNext.href = "#" + encodeURIComponent(cell(next, COL.id)); aNext.textContent = "Next Artwork \u2192";
-  nav.appendChild(aPrev); nav.appendChild(aHome);
-  const sp = el("span", "spacer"); nav.appendChild(sp);
-  nav.appendChild(aNext);
+  const aHome = el("a"); aHome.href = "#"; aHome.textContent = "Home";
+  nav.appendChild(aPrev); nav.appendChild(aNext); nav.appendChild(aHome);
   view.appendChild(nav);
 
   const art = el("div", "art");
@@ -201,37 +184,6 @@ function renderArtwork(id){
     dl.appendChild(dt); dl.appendChild(dd);
   });
   details.appendChild(dl);
-
-  // buy if a payment link exists, otherwise inquire
-  const action = el("div", "action");
-  const paylink = cell(row, COL.paylink);
-  const title = cell(row, COL.title);
-  if(/^sold$/i.test(paylink)){
-    const tag = el("div", "sold"); tag.textContent = "Sold";
-    action.appendChild(tag);
-  } else if(/^https?:\/\//i.test(paylink)){
-    const buy = el("a", "btn buy");
-    buy.href = paylink; buy.textContent = "Buy this artwork";
-    buy.rel = "noopener"; buy.target = "_blank";
-    action.appendChild(buy);
-    const note = el("p", "note"); note.textContent = "Secure checkout"; action.appendChild(note);
-  } else {
-    const subject = "Inquiry: " + title + " (" + id + ")";
-    const body = "Hello,\n\nI'm interested in this artwork:\n\n"
-      + "Title: " + title + "\n"
-      + "ID: " + id + "\n"
-      + "Medium: " + cell(row, COL.medium) + "\n"
-      + "Size: " + cell(row, COL.size) + "\n"
-      + "Price: " + cell(row, COL.price) + "\n\n"
-      + "Please let me know about availability and shipping.\n\nThank you.";
-    const inq = el("a", "btn inquire");
-    inq.href = "mailto:" + INQUIRE_EMAIL
-      + "?subject=" + encodeURIComponent(subject)
-      + "&body=" + encodeURIComponent(body);
-    inq.textContent = "Inquire about this artwork";
-    action.appendChild(inq);
-  }
-  details.appendChild(action);
   right.appendChild(details);
 
   // related block
