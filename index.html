@@ -40,7 +40,7 @@
 
   /* home grid */
   .count{color:var(--muted); font-size:13px; padding:18px 0 0;}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:10px 0 60px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:10px 0 60px; align-items:start;}
   .card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line);
     border-radius:2px; overflow:hidden;}
   .imglink{display:block; text-decoration:none; color:inherit;}
@@ -53,6 +53,10 @@
     text-decoration:underline; text-underline-offset:2px;}
   .more:hover{opacity:.75;}
   .cmeta{color:var(--muted); font-size:12.5px; margin:7px 0 0;}
+  .gallery-card .g-name{font-family:"Spectral", Georgia, serif; font-weight:500; font-size:16px; line-height:1.2; margin:0 0 8px;}
+  .gallery-card .g-line{margin:0 0 3px; font-size:13px; line-height:1.45;}
+  .gallery-card .g-event{margin:0 0 3px; font-size:13px; line-height:1.45;}
+  .gallery-card .g-event-first{margin-top:8px;}
 
   /* artwork view */
   .art{display:grid; grid-template-columns:2fr 1fr; gap:34px; padding:22px 0 64px; align-items:start;}
@@ -156,9 +160,27 @@ function route(){
 }
 
 /* ---------------- home ---------------- */
+function galleryTile(){
+  const card = el("div", "card gallery-card");
+  const frame = el("div", "frame");
+  imgInto(frame, IMAGE_BASE + "images_th/vhg.jpg", "Victorian House Gallery", "Image not found");
+  card.appendChild(frame);
+  const body = el("div", "cbody");
+  const name = el("p", "g-name"); name.textContent = "Victorian House Gallery"; body.appendChild(name);
+  ["577 S. Main St, Bourbonnais, IL",
+   "Mon\u2013Thurs 4:30\u20137:30 pm",
+   "Fri\u2013Sat 1:00\u20134:00 pm"].forEach(t => { const p = el("p", "g-line"); p.textContent = t; body.appendChild(p); });
+  [["On View", "Nov 2, 2026 \u2013 Feb 6, 2027"], ["Meet the Artist", "Dec 3, 2026"], ["Artist Talk", "Feb 6, 2027, 1 pm"]].forEach((e, i) => {
+    const p = el("p", "g-event" + (i === 0 ? " g-event-first" : "")); p.textContent = e[0] + ": " + e[1]; body.appendChild(p);
+  });
+  card.appendChild(body);
+  return card;
+}
+
 function renderHome(){
   const view = $("view"); view.innerHTML = "";
   const grid = el("div", "grid");
+  grid.appendChild(galleryTile());
   WORKS.forEach(r => {
     const id = cell(r, COL.id);
     const href = "#" + encodeURIComponent(id);
