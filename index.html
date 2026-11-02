@@ -60,6 +60,17 @@
   dl.meta{margin:0; display:grid; grid-template-columns:auto 1fr; gap:7px 14px;}
   dl.meta dt{color:var(--muted); font-size:12.5px;}
   dl.meta dd{margin:0; font-size:14px;}
+
+  /* call to action */
+  .cta{display:inline-block; margin-top:18px; padding:11px 22px; border-radius:2px;
+    font-family:"IBM Plex Sans", system-ui, sans-serif; font-size:14px; font-weight:600;
+    text-decoration:none; text-align:center;}
+  .cta.buy{background:var(--accent); color:#fcfbf8; border:1px solid var(--accent);}
+  .cta.buy:hover{opacity:.9;}
+  .cta.inquire{background:transparent; color:var(--accent); border:1px solid var(--accent);}
+  .cta.inquire:hover{background:var(--accent); color:#fcfbf8;}
+  .sold-label{display:inline-block; margin-top:18px; font-size:14px; color:var(--muted); font-style:italic;}
+
   .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
   .related-grid a{text-decoration:none; display:block;}
   .related-grid .rframe{background:var(--mat); border:1px solid var(--line); border-radius:2px;
@@ -91,7 +102,12 @@
 /* ---------------- config ---------------- */
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9c4thGPaDNLfMywOGAmZIPTYyDZQTmXvlWCFf_qzTia44vK5gmGbE9kyN0Dc0NstkuEpYMh/pub?gid=637529450&single=true&output=csv";
 const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
-const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10 };
+
+// SET THIS to your email address. It is used for the Inquire button.
+const INQUIRE_EMAIL = "youremail@example.com";
+
+// Columns read by position. paylink (L) drives the Buy / Sold / Inquire button.
+const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10, paylink:11 };
 const img = (id) => IMAGE_BASE + "images_th/" + id + "_th.jpg";
 
 /* ---------------- helpers ---------------- */
@@ -147,6 +163,31 @@ function renderHome(){
   view.appendChild(grid);
 }
 
+/* ---------------- call to action ---------------- */
+function addCTA(container, row){
+  const id = cell(row, COL.id);
+  const pay = cell(row, COL.paylink);
+  if(/^https?:\/\//i.test(pay)){
+    const a = el("a", "cta buy"); a.href = pay; a.textContent = "Buy this piece";
+    container.appendChild(a);
+  } else if(pay.toUpperCase() === "SOLD"){
+    const s = el("div", "sold-label"); s.textContent = "Sold";
+    container.appendChild(s);
+  } else {
+    const subject = "Inquiry: " + cell(row, COL.title) + " (" + id + ")";
+    const lines = ['I am interested in "' + cell(row, COL.title) + '" (' + id + ').'];
+    if(cell(row, COL.medium)) lines.push("Medium: " + cell(row, COL.medium));
+    if(cell(row, COL.size))   lines.push("Size: " + cell(row, COL.size));
+    if(cell(row, COL.price))  lines.push("Price: " + cell(row, COL.price));
+    lines.push("");
+    lines.push("Please let me know about availability and shipping.");
+    const href = "mailto:" + INQUIRE_EMAIL + "?subject=" + encodeURIComponent(subject) +
+                 "&body=" + encodeURIComponent(lines.join("\n"));
+    const a = el("a", "cta inquire"); a.href = href; a.textContent = "Inquire";
+    container.appendChild(a);
+  }
+}
+
 /* ---------------- artwork ---------------- */
 function renderArtwork(id){
   const view = $("view"); view.innerHTML = "";
@@ -174,7 +215,7 @@ function renderArtwork(id){
   // right: blocks, 1/3
   const right = el("div", "detail-col");
 
-  // details block
+  // details block (title, medium, size, year, price, then the button)
   const details = el("div", "block");
   const h1 = el("h1"); h1.textContent = cell(row, COL.title); details.appendChild(h1);
   const dl = el("dl", "meta");
@@ -184,6 +225,7 @@ function renderArtwork(id){
     dl.appendChild(dt); dl.appendChild(dd);
   });
   details.appendChild(dl);
+  addCTA(details, row);
   right.appendChild(details);
 
   // related block
