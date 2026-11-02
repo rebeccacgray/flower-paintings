@@ -29,6 +29,14 @@
   .masthead .byline{font-family:"Spectral", Georgia, serif; font-style:normal; font-weight:400;
     font-size:clamp(17px, 2.2vw, 22px); color:var(--muted); margin:8px 0 0; line-height:1.2;}
   .masthead .rule{height:1px; background:var(--line); margin:18px 0 0;}
+  .show{display:flex; flex-wrap:wrap; gap:16px 56px; margin-top:20px; padding-top:18px;
+    border-top:1px solid var(--line);
+    font-family:"IBM Plex Sans", system-ui, sans-serif; font-size:14px; line-height:1.5; color:var(--ink);}
+  .show dl.pairs{margin:0; display:grid; grid-template-columns:auto 1fr; gap:4px 14px;}
+  .show dl.pairs dt{color:var(--muted);}
+  .show dl.pairs dd{margin:0;}
+  .show .venue{font-family:"Spectral", Georgia, serif; font-weight:500; font-size:16px; margin:0 0 3px;}
+  .show .addr{margin:0;}
 
   /* page nav on artwork view, all nested left */
   .nav{display:flex; gap:20px; align-items:center; padding:18px 0 4px; font-size:13.5px;}
@@ -37,7 +45,7 @@
 
   /* home grid */
   .count{color:var(--muted); font-size:13px; padding:18px 0 0;}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:20px 0 60px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:10px 0 60px;}
   .card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line);
     border-radius:2px; overflow:hidden;}
   .imglink{display:block; text-decoration:none; color:inherit;}
@@ -97,6 +105,21 @@
       <h1>Flower Paintings &amp; Portraits</h1>
       <p class="byline">Original Artworks by Rebecca C Gray</p>
     </a>
+    <div class="show">
+      <dl class="pairs">
+        <dt>On View</dt><dd>Nov 2, 2026 &ndash; Feb 6, 2027</dd>
+        <dt>Meet the Artist</dt><dd>Dec 3, 2026</dd>
+        <dt>Artist Talk</dt><dd>Feb 6, 2027, 1 pm</dd>
+      </dl>
+      <div class="venue-col">
+        <p class="venue">Victorian House Gallery</p>
+        <p class="addr">577 S. Main St, Bourbonnais, IL</p>
+      </div>
+      <dl class="pairs">
+        <dt>Mon&ndash;Thurs</dt><dd>4:30&ndash;7:30 pm</dd>
+        <dt>Fri&ndash;Sat</dt><dd>1:00&ndash;4:00 pm</dd>
+      </dl>
+    </div>
     <div class="rule"></div>
   </header>
   <main id="view"></main>
@@ -151,7 +174,6 @@ function route(){
 /* ---------------- home ---------------- */
 function renderHome(){
   const view = $("view"); view.innerHTML = "";
-  const count = el("p", "count"); count.textContent = WORKS.length + " works"; view.appendChild(count);
   const grid = el("div", "grid");
   WORKS.forEach(r => {
     const id = cell(r, COL.id);
