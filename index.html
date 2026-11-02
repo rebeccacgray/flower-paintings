@@ -39,13 +39,17 @@
   .count{color:var(--muted); font-size:13px; padding:18px 0 0;}
   .grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:26px 22px; padding:20px 0 60px;}
   .card{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line);
-    border-radius:2px; overflow:hidden; text-decoration:none;}
+    border-radius:2px; overflow:hidden;}
+  .imglink{display:block; text-decoration:none; color:inherit;}
   .frame{background:var(--mat); padding:16px; display:flex; align-items:center; justify-content:center; min-height:170px;}
   .frame img{max-width:100%; height:auto; display:block;}
   .frame .missing{color:var(--muted); font-size:12.5px; text-align:center; padding:24px 8px;}
-  .cbody{padding:12px 14px 15px;}
+  .cbody{padding:12px 14px 16px; text-align:center;}
   .ctitle{font-family:"Spectral", Georgia, serif; font-size:16px; font-weight:500; line-height:1.2; margin:0;}
-  .cmeta{color:var(--muted); font-size:12.5px; margin:4px 0 0;}
+  .more{display:inline-block; margin-top:7px; font-size:13px; color:var(--accent);
+    text-decoration:underline; text-underline-offset:2px;}
+  .more:hover{opacity:.75;}
+  .cmeta{color:var(--muted); font-size:12.5px; margin:7px 0 0;}
 
   /* artwork view */
   .art{display:grid; grid-template-columns:2fr 1fr; gap:34px; padding:22px 0 64px; align-items:start;}
@@ -103,10 +107,10 @@
 const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vThQlNRe9c4thGPaDNLfMywOGAmZIPTYyDZQTmXvlWCFf_qzTia44vK5gmGbE9kyN0Dc0NstkuEpYMh/pub?gid=637529450&single=true&output=csv";
 const IMAGE_BASE = "https://cdn.jsdelivr.net/gh/rebeccacgray/art-catalog-images@main/";
 
-// SET THIS to your email address. It is used for the Inquire button.
+// SET THIS to your email address. It is used for the Purchase this Work button.
 const INQUIRE_EMAIL = "youremail@example.com";
 
-// Columns read by position. paylink (L) drives the Buy / Sold / Inquire button.
+// Columns read by position. paylink (L) drives the Buy / Sold / Purchase button.
 const COL = { id:0, category:2, rel1:3, rel2:4, title:6, medium:7, size:8, year:9, price:10, paylink:11 };
 const img = (id) => IMAGE_BASE + "images_th/" + id + "_th.jpg";
 
@@ -151,14 +155,21 @@ function renderHome(){
   const grid = el("div", "grid");
   WORKS.forEach(r => {
     const id = cell(r, COL.id);
-    const a = el("a", "card"); a.href = "#" + encodeURIComponent(id);
+    const href = "#" + encodeURIComponent(id);
+    const card = el("div", "card");
+
+    const link = el("a", "imglink"); link.href = href;
     const frame = el("div", "frame");
     imgInto(frame, img(id), cell(r, COL.title), "Image coming soon");
+    link.appendChild(frame);
+
     const body = el("div", "cbody");
     const t = el("p", "ctitle"); t.textContent = cell(r, COL.title); body.appendChild(t);
+    const more = el("a", "more"); more.href = href; more.textContent = "More Information"; body.appendChild(more);
     const m = cell(r, COL.category);
     if(m){ const cm = el("p", "cmeta"); cm.textContent = m; body.appendChild(cm); }
-    a.appendChild(frame); a.appendChild(body); grid.appendChild(a);
+
+    card.appendChild(link); card.appendChild(body); grid.appendChild(card);
   });
   view.appendChild(grid);
 }
@@ -183,7 +194,7 @@ function addCTA(container, row){
     lines.push("Please let me know about availability and shipping.");
     const href = "mailto:" + INQUIRE_EMAIL + "?subject=" + encodeURIComponent(subject) +
                  "&body=" + encodeURIComponent(lines.join("\n"));
-    const a = el("a", "cta inquire"); a.href = href; a.textContent = "Inquire";
+    const a = el("a", "cta inquire"); a.href = href; a.textContent = "Purchase this Work";
     container.appendChild(a);
   }
 }
@@ -195,12 +206,12 @@ function renderArtwork(id){
   const prev = WORKS[(idx - 1 + WORKS.length) % WORKS.length];
   const next = WORKS[(idx + 1) % WORKS.length];
 
-  // nav, all nested to the left
+  // nav: Previous, Home, Next, all nested to the left
   const nav = el("nav", "nav");
   const aPrev = el("a"); aPrev.href = "#" + encodeURIComponent(cell(prev, COL.id)); aPrev.textContent = "\u2190 Previous Artwork";
-  const aNext = el("a"); aNext.href = "#" + encodeURIComponent(cell(next, COL.id)); aNext.textContent = "Next Artwork \u2192";
   const aHome = el("a"); aHome.href = "#"; aHome.textContent = "Home";
-  nav.appendChild(aPrev); nav.appendChild(aNext); nav.appendChild(aHome);
+  const aNext = el("a"); aNext.href = "#" + encodeURIComponent(cell(next, COL.id)); aNext.textContent = "Next Artwork \u2192";
+  nav.appendChild(aPrev); nav.appendChild(aHome); nav.appendChild(aNext);
   view.appendChild(nav);
 
   const art = el("div", "art");
