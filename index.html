@@ -87,6 +87,9 @@
   .cta.inquire{background:transparent; color:var(--accent); border:1px solid var(--accent);}
   .cta.inquire:hover{background:var(--accent); color:#fcfbf8;}
   .sold-label{display:inline-block; margin-top:18px; font-size:14px; color:var(--muted); font-style:italic;}
+  .email-line{display:block; margin-top:12px; font-size:13px; color:var(--accent);
+    text-decoration:underline; text-underline-offset:2px;}
+  .email-line:hover{opacity:.75;}
 
   .related-grid{display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;}
   .related-grid a{text-decoration:none; display:block;}
@@ -292,6 +295,19 @@ function renderStatement(){
 }
 
 /* ---------------- call to action ---------------- */
+function workMailto(row){
+  const id = cell(row, COL.id);
+  const subject = "Inquiry: " + cell(row, COL.title) + " (" + id + ")";
+  const lines = ['I am interested in "' + cell(row, COL.title) + '" (' + id + ').'];
+  if(cell(row, COL.medium)) lines.push("Medium: " + cell(row, COL.medium));
+  if(cell(row, COL.size))   lines.push("Size: " + cell(row, COL.size));
+  if(cell(row, COL.price))  lines.push("Price: " + cell(row, COL.price));
+  lines.push("");
+  lines.push("Please let me know about availability and shipping.");
+  return "mailto:" + INQUIRE_EMAIL + "?subject=" + encodeURIComponent(subject) +
+         "&body=" + encodeURIComponent(lines.join("\n"));
+}
+
 function addCTA(container, row){
   const id = cell(row, COL.id);
   const pay = cell(row, COL.paylink);
@@ -302,16 +318,7 @@ function addCTA(container, row){
     const s = el("div", "sold-label"); s.textContent = "Sold";
     container.appendChild(s);
   } else {
-    const subject = "Inquiry: " + cell(row, COL.title) + " (" + id + ")";
-    const lines = ['I am interested in "' + cell(row, COL.title) + '" (' + id + ').'];
-    if(cell(row, COL.medium)) lines.push("Medium: " + cell(row, COL.medium));
-    if(cell(row, COL.size))   lines.push("Size: " + cell(row, COL.size));
-    if(cell(row, COL.price))  lines.push("Price: " + cell(row, COL.price));
-    lines.push("");
-    lines.push("Please let me know about availability and shipping.");
-    const href = "mailto:" + INQUIRE_EMAIL + "?subject=" + encodeURIComponent(subject) +
-                 "&body=" + encodeURIComponent(lines.join("\n"));
-    const a = el("a", "cta inquire"); a.href = href; a.textContent = "Purchase this Work";
+    const a = el("a", "cta inquire"); a.href = workMailto(row); a.textContent = "Purchase this Work";
     container.appendChild(a);
   }
 }
@@ -354,6 +361,10 @@ function renderArtwork(id){
   });
   details.appendChild(dl);
   addCTA(details, row);
+  const emailLine = el("a", "email-line");
+  emailLine.href = workMailto(row);
+  emailLine.textContent = "Email " + INQUIRE_EMAIL + " about this work";
+  details.appendChild(emailLine);
   right.appendChild(details);
 
   // related block
